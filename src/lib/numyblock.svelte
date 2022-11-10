@@ -1,46 +1,154 @@
 <script lang="ts">
-  let inputValue: string = ""
-  const typeThis = (dickNum) => {
-    inputValue += `${dickNum}`;
-};
- 
+
+let inputValueString: string = ""
+let equationArray: string[] = []
+let equationHistory = []
+let x: number = 0
+let y: number = 0
+let lastFormula
+let openForDelete: boolean = false
+let testOperator: string
+
+function calculate(operator: string){
+        
+    let result: number
+
+    if (equationHistory.length != 0) {
+        x = lastFormula.result
+    } 
+
+    console.log("Factor 1: " + x)
+    console.log("Factor 2: " + y)
+    
+    switch (operator){
+        case "+": result = x + y
+        break
+        case "-": result = x - y
+        break
+        case "/": result = x / y
+        break
+        case "*": result = x * y
+        break
+        default:
+        break
+    }
+
+    inputValueString = `${result}`
+
+    let obj = {
+        x: x,
+        y: y,
+        operator: operator,
+        result: result
+    }
+
+    lastFormula = obj
+    equationHistory.push(obj)
+    console.log(equationHistory)
+    equationArray = []
+    openForDelete = true
+    return result
+}
+
+function getXAndY(operator: string) { 
+    
+    if (x == 0) {
+        x = parseFloat(equationArray.join(""))
+        inputValueString = ""
+        equationArray = []
+        testOperator = operator
+        return 
+    } else {
+        y = parseFloat(equationArray.join(""))
+        inputValueString = ""
+        equationArray = []
+        calculate(testOperator)
+        return
+    }
+    
+}
+
+const equationCapture = (operandOrNumber: string) => {
+    const clickedOperand: boolean = RegExp('[\+\-\/\*\=]').test(operandOrNumber)
+    const fieldClicked: boolean = RegExp('[0-9\+\-\/\*]').test(operandOrNumber)
+    const acClicked: boolean = operandOrNumber == "AC"
+    const delClicked: boolean = operandOrNumber == "DEL"
+
+    function pushToInput(){
+        equationArray.push(operandOrNumber)
+        inputValueString += operandOrNumber
+    }
+
+    if (clickedOperand && inputValueString != "" && operandOrNumber != "=") {
+        inputValueString = ""
+        getXAndY(operandOrNumber)
+        return
+    }
+
+    if (operandOrNumber == "=" && x != 0) {
+        inputValueString = ""
+        getXAndY(testOperator)
+        return
+    }
+
+    if (fieldClicked && inputValueString != "" && openForDelete ){
+        openForDelete = false
+        inputValueString = ""
+    }
+
+    if (fieldClicked && !clickedOperand) {
+        pushToInput()
+        return
+    }
+
+    if (acClicked) {
+        inputValueString = ""
+        equationArray = []
+        equationHistory = []
+    }1
+
+}
   
 </script>
 
 <div class="container">
 
-  <input id="input" class="center" type="form" bind:value={inputValue} />
-
+  <input disabled id="input" class="center" type="form" bind:value={inputValueString} />
     <div id="operators" class = "grids">
-        <input type="button" class="controlElement" value="+" />
-        <input type="button" class="controlElement" value="-" />
-        <input type="button" class="controlElement" value="x" />
-        <input type="button" class="controlElement" value="/" />
-        <input type="button" class="controlElement" value="=" />
+        <button class="controlElement"  on:click = {() => equationCapture("+")}>+</button>
+        <button class="controlElement"  on:click = {() => equationCapture("-")}>-</button>
+        <button class="controlElement"  on:click = {() => equationCapture("*")}>x</button>
+        <button class="controlElement"  on:click = {() => equationCapture("/")}>/</button>
+        <button class="controlElement"  on:click = {() => equationCapture("=")}>=</button>
     </div>
   <div id="numberblock" class="grids">
-    <input type="button" class="controlElement" value="7" on:click = {() => typeThis(7)}/>
-    <input type="button" class="controlElement" value="8" on:click = {() => typeThis(8)}/>
-    <input type="button" class="controlElement" value="9" on:click = {() => typeThis(9)}/>
-    <input type="button" class="controlElement" value="4" on:click = {() => typeThis(4)}/>
-    <input type="button" class="controlElement" value="5" on:click = {() => typeThis(5)}/>
-    <input type="button" class="controlElement" value="6" on:click = {() => typeThis(6)}/>
-    <input type="button" class="controlElement" value="1" on:click = {() => typeThis(1)}/>
-    <input type="button" class="controlElement" value="3" on:click = {() => typeThis(3)}/>
-    <input type="button" class="controlElement" value="2" on:click = {() => typeThis(2)}/>
-  </div>
+    <button class="controlElement" on:click = {() => equationCapture("7")}>7</button>
+    <button class="controlElement" on:click = {() => equationCapture("8")}>8</button>
+    <button class="controlElement" on:click = {() => equationCapture("9")}>9</button>
+    <button class="controlElement" on:click = {() => equationCapture("4")}>4</button>
+    <button class="controlElement" on:click = {() => equationCapture("5")}>5</button>
+    <button class="controlElement" on:click = {() => equationCapture("6")}>6</button>
+    <button class="controlElement" on:click = {() => equationCapture("1")}>1</button>
+    <button class="controlElement" on:click = {() => equationCapture("2")}>2</button>
+    <button class="controlElement" on:click = {() => equationCapture("3")}>3</button>
+    <button class="controlElement" on:click = {() => equationCapture("AC")}>AC</button>
+    <button class="controlElement" on:click = {() => equationCapture("0")}>0</button>
+    <button class="controlElement" on:click = {() => equationCapture("DEL")}>DEL</button>
 </div>
+</div>
+
 
 <style>
   #numberblock {
     width: 150px;
-    grid-template-columns: 30px 30px 30px;
+    grid-template-columns: 45px 45px 45px;
 
   }
 
   #operators {
-    grid-template-columns: 30px 30px 30px 30px 30px;
+    grid-template-columns: 45px 45px 45px 45px 45px;
   }
+  
 
   .grids {
     margin: auto;
@@ -74,7 +182,7 @@
   }
 
   #input {
-    width: 180px;
+    width: 270px;
     height: 30px;
     border-radius: 2px;
     border-top-style: hidden;
@@ -83,23 +191,28 @@
     background-color: #404258 ;
     border-color: #6B728E;
     color: rgb(172, 172, 172);
+    text-align: center;
   }
 
   @media (prefers-color-scheme: light) {
-    
+
+
     .controlElement {
-        background-color: rgb(226, 226, 226);
+        background-color: #D6E4E5;
+        color: #497174;
     }
     .controlElement:hover {
-    background-color: #a9a9a9;
-  }
+        background-color: #EDEDED;
+    }
 
-  .controlElement:active {
-    background-color: #bfbfbf;
-  }
-  #input {
-    background-color: aliceblue;
-  }
-  }
+    .controlElement:active {
+        background-color: #EB6440;
+    }
+    #input {
+        background-color: #e5eef0;
+        color: #497174;
+        border:none;
+    }
+    }
 
 </style>
